@@ -1,0 +1,55 @@
+#
+#   Legio Investment Data Pipeline FX Processor Container Dockerfile
+#
+
+# Use base adjust ubuntu image
+FROM ubuntu:latest
+
+MAINTAINER LegioInvestment <admin@legioinvestment.com>
+
+# Install OS Packages:
+# Misc tools for running Python and IB inside a headless container.
+RUN apt-get update && apt-get install -y git unzip nano wget
+
+# Install miniconda and supported third party python packages
+RUN env TZ=UTC
+ENV PATH="/opt/miniconda3/bin:${PATH}"
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
+    rm -rf Miniconda3-latest-Linux-x86_64.sh && \
+    ln -s /opt/miniconda3/lib/libpython3.6m.so /usr/lib/libpython3.6m.so && \
+    conda update -y conda pip && \
+    conda install -y python=3.7.1 && \
+    conda install -y numpy=1.14.5 && \
+    conda install -y pandas=0.23.4 && \
+    conda install -y -c conda-forge rauth && \
+    conda install -c anaconda mysql-connector-python && \
+    conda install -c conda-forge fastparquet && \
+    conda install -c conda-forge dask && \
+    conda install -c anaconda jupyter && \
+    conda install -c anaconda boto3 && \
+    conda install -c conda-forge awscli && \
+    conda install -c tibkiss ibpy2 && \
+    conda clean -y --all
+
+# Download Connection Files
+RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.zip && \    
+    unzip ./master.zip -d ~/ && \
+    rm -r ./master.zip && \
+    cd ~/LegioContainerFiles-master && \    
+    mkdir ~/data && \
+    mkdir ~/data/hour && \
+    mkdir ~/data/min && \    
+    cp -a ~/LegioContainerFiles-master/CreateMarketCodeFile.sh /CreateMarketCodeFile.sh && \
+    cp -a ~/LegioContainerFiles-master/RetrieveHistoricalData.py /RetrieveHistoricalData.py && \
+    cp -a ~/LegioContainerFiles-master/BaseConfigInfo.csv /BaseConfigInfo.csv && \
+    chmod +x /CreateMarketCodeFile.sh
+
+    ## Run the AWS Configure process
+RUN mkdir ~/.aws && \
+    cp -a ~/LegioContainerFiles-master/credentials ~/.aws/credentials && \
+    cp -a ~/LegioContainerFiles-master/config ~/.aws/config
+
+## Assign Market Code and Start Jupyter Notebook
+#CMD ["jupyter notebook --ip=0.0.0.0 --port=8080 --allow-root"]
+

@@ -1,0 +1,47 @@
+#
+#   Legio Investment Data Pipeline IB Container Dockerfile
+#
+
+# Use base adjust ubuntu image
+FROM phusion/baseimage:0.9.22
+
+MAINTAINER LegioInvestment <admin@legioinvestment.com>
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+
+# Have to add env TZ=UTC. See https://github.com/dotnet/coreclr/issues/602
+RUN env TZ=UTC
+
+# Install OS Packages:
+# Misc tools for running Python and IB inside a headless container.
+RUN apt-get update && apt-get install -y git unzip xvfb x11vnc wget net-tools python3 python3-pip python-opengl
+
+# Install IB Gateway: Installs to ~/Jts
+RUN wget https://download2.interactivebrokers.com/installers/ibgateway/latest-standalone/ibgateway-latest-standalone-linux-x64.sh && \
+        chmod a+x ibgateway-latest-standalone-linux-x64.sh && \
+        yes 'n'|sh ibgateway-latest-standalone-linux-x64.sh -c && \
+        rm -r ibgateway-latest-standalone-linux-x64.sh
+
+# Install IB Controller: Installs to ~/IBController
+RUN wget https://github.com/ib-controller/ib-controller/releases/download/3.4.0/IBController-3.4.0.zip && \
+        unzip ./IBController-3.4.0.zip -d ~/ibcontroller.paper && \
+        chmod a+x ~/ibcontroller.paper/*.sh ~/ibcontroller.paper/*/*.sh
+
+# Download Replacement Files
+RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.zip && \
+        unzip ./master.zip -d ~/ && \
+        cp -a ~/LegioContainerFiles-master/IBControllerGatewayStart.sh ~/ibcontroller.paper/IBControllerGatewayStart.sh && \
+        cp -a ~/LegioContainerFiles-master/IBController.ini ~/ibcontroller.paper/IBController.ini && \
+        cp -a ~/LegioContainerFiles-master/jts.ini ~/Jts/jts.ini && \
+        chmod a+x ~/ibcontroller.paper/*.sh ~/ibcontroller.paper/*/*.sh && \
+        chmod a+x ~/ibcontroller.paper/Scripts/IBController.sh && \
+        chmod a+x ~/ibcontroller.paper/Scripts/DisplayBannerAndLaunch.sh
+
+# Setup x11 screen simulator
+RUN chmod +x /root/LegioContainerFiles-master/setupVNC.sh
+
+EXPOSE 5900
+EXPOSE 4002
+
+ENTRYPOINT ["/root/LegioContainerFiles-master/setupVNC.sh"]
