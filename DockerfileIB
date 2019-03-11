@@ -18,10 +18,10 @@ RUN env TZ=UTC
 RUN apt-get update && apt-get install -y git unzip xvfb x11vnc wget net-tools python3 python3-pip python-opengl
 
 # Install IB Gateway: Installs to ~/Jts
-RUN wget https://download2.interactivebrokers.com/installers/ibgateway/latest-standalone/ibgateway-latest-standalone-linux-x64.sh && \
-        chmod a+x ibgateway-latest-standalone-linux-x64.sh && \
-        yes 'n'|sh ibgateway-latest-standalone-linux-x64.sh -c && \
-        rm -r ibgateway-latest-standalone-linux-x64.sh
+RUN wget https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh && \
+        chmod a+x ibgateway-stable-standalone-linux-x64.sh && \
+        yes 'n'|sh ibgateway-stable-standalone-linux-x64.sh -c && \
+        rm -r ibgateway-stable-standalone-linux-x64.sh
 
 # Install IB Controller: Installs to ~/IBController
 RUN wget https://github.com/ib-controller/ib-controller/releases/download/3.4.0/IBController-3.4.0.zip && \

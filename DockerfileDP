@@ -29,26 +29,28 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     conda install -c anaconda jupyter && \
     conda install -c anaconda boto3 && \
     conda install -c conda-forge awscli && \
-    conda install -c tibkiss ibpy2 && \
     conda clean -y --all && \
     pip install schedule
-    
+
+RUN wget https://github.com/blampe/IbPy/archive/master.zip &&\
+    unzip ./master.zip -d ~/ && \
+    rm -r ./master.zip
 
 # Download Connection Files
-RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.zip && \    
+RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.zip && \
     unzip ./master.zip -d ~/ && \
     rm -r ./master.zip && \
-    cd ~/LegioContainerFiles-master && \    
+    cd ~/LegioContainerFiles-master && \
     mkdir ~/data && \
     mkdir ~/data/hour && \
-    mkdir ~/data/min && \    
+    mkdir ~/data/min && \
     cp -a ~/LegioContainerFiles-master/CreateMarketCodeFile.sh /CreateMarketCodeFile.sh && \
     cp -a ~/LegioContainerFiles-master/RetrieveHistoricalData.py /RetrieveHistoricalData.py && \
     cp -a ~/LegioContainerFiles-master/BaseConfigInfo.csv /BaseConfigInfo.csv && \
     chmod +x /CreateMarketCodeFile.sh
 
     ## Run the AWS Configure process
-RUN mkdir ~/.aws && \    
+RUN mkdir ~/.aws && \
     pip install awscli
 
 COPY credentials ~/.aws/credentials && \
@@ -56,4 +58,3 @@ COPY credentials ~/.aws/credentials && \
 
 ## Assign Market Code and Start Jupyter Notebook
 #CMD ["jupyter notebook --ip=0.0.0.0 --port=8080 --allow-root"]
-
