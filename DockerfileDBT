@@ -1,0 +1,72 @@
+#
+#   Legio Investment Data Pipeline FX Processor Container Dockerfile
+#
+
+# Use base adjust ubuntu image
+FROM ubuntu:latest
+
+MAINTAINER LegioInvestment <admin@legioinvestment.com>
+
+# Install OS Packages:
+# Misc tools for running Python and IB inside a headless container.
+RUN apt-get update && apt-get install -y git unzip nano wget
+
+# Install miniconda and supported third party python packages
+RUN env TZ=UTC
+ENV PATH="/opt/miniconda3/bin:${PATH}"
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
+    rm -rf Miniconda3-latest-Linux-x86_64.sh && \
+    ln -s /opt/miniconda3/lib/libpython3.6m.so /usr/lib/libpython3.6m.so && \
+    conda update -y conda pip && \
+    conda install -y python=3.7.1 && \
+    conda install -y numpy=1.14.5 && \
+    conda install -y pandas=0.23.4 && \
+    conda install -y -c conda-forge rauth && \
+    conda install -c anaconda mysql-connector-python && \
+    conda install -c conda-forge fastparquet && \
+    conda install -c conda-forge dask && \
+    conda install -c anaconda jupyter && \
+    conda install -c anaconda boto3 && \
+    conda install -c conda-forge awscli && \
+    conda clean -y --all && \
+    pip install schedule && \
+    pip install ib-api && \
+    pip install ibpy2
+
+RUN wget https://github.com/blampe/IbPy/archive/master.zip &&\
+    unzip ./master.zip -d ~/ && \
+    rm -r ./master.zip && \
+    cd ~/IbPy-master && \
+    python setup.py install
+
+# Download Connection Files
+RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.zip && \
+    unzip ./master.zip -d ~/ && \
+    rm -r ./master.zip && \
+    cd ~/LegioContainerFiles-master && \
+    mkdir ~/data && \
+    mkdir ~/data/hour && \
+    mkdir ~/data/min && \
+    nkdir ~/logs && \
+    cp -a ~/LegioContainerFiles-master/BaseConfigInfo.csv /BaseConfigInfo.csv    
+
+    ## Run the AWS Configure process
+RUN mkdir ~/.aws && \
+    pip install awscli
+
+ADD credentials /
+ADD config /
+
+RUN cp -a /credentials ~/.aws/credentials &&\
+    cp -a /config ~/.aws/config
+
+ADD DataProcessor_Threads.py /
+ADD IBTrader.py /
+ADD aitrader_datagen.py /
+ADD aitrader_model.py /
+ADD aitrader_utils.py /
+ADD tech_indicators.py /
+
+## Assign Market Code and Start Retrieving Data
+CMD ["python", "./DailyDataProcess.py"]
