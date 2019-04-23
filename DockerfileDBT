@@ -47,9 +47,11 @@ RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.z
     cd ~/LegioContainerFiles-master && \
     mkdir ~/data && \
     mkdir ~/data/hour && \
-    mkdir ~/data/min && \
-    nkdir ~/logs && \
-    cp -a ~/LegioContainerFiles-master/BaseConfigInfo.csv /BaseConfigInfo.csv    
+    mkdir ~/data/min && \      
+    mkdir ~/logs && \
+    cp -a ~/LegioContainerFiles-master/model_export.zip /model_export.zip && \
+    unzip /model_export.zip -d / && \
+    cp -a ~/LegioContainerFiles-master/BaseConfigInfo.csv /BaseConfigInfo.csv 
 
     ## Run the AWS Configure process
 RUN mkdir ~/.aws && \
@@ -69,4 +71,4 @@ ADD aitrader_utils.py /
 ADD tech_indicators.py /
 
 ## Assign Market Code and Start Retrieving Data
-CMD ["python", "./DailyDataProcess.py"]
+CMD ["python", "./DataProcessor_Threads.py"]
