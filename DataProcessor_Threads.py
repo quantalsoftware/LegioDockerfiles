@@ -29,8 +29,8 @@ bucket = s3.Bucket(name=s3bucketName)
 #s3_StorageLocation = "database_data/"
 s3_StorageLocation = "Legio/data/database_data/"
 
-localStorage = '/general/legiotrader/MarketData/'
-#localStorage = '/root/MarketDataTemp/'
+#localStorage = '/general/legiotrader/MarketData/'
+localStorage = '/root/data/'
 
 dbHostContainer = "ec2-3-104-151-3.ap-southeast-2.compute.amazonaws.com"
 dbHostPort = "31330"
@@ -184,26 +184,26 @@ def RegisterSchedule():
     schedule.every().day.at("21:30").do(StoreMarketData).tag('data-tasks')
 
 def CheckDatetime(datetime):
-    log_stage('dt_check_START')
+    #log_stage('dt_check_START')
     if datetime.weekday() == 6:
         if datetime.hour >= 9:
-            log_stage('dt_check_END')
+            #log_stage('dt_check_END')
             return True
         else:
-            log_stage('dt_check_END')
+            #log_stage('dt_check_END')
             return False    
     elif datetime.weekday() == 4:
         if datetime.hour < 21:
-            log_stage('dt_check_END')
+            #log_stage('dt_check_END')
             return True
         else:
-            log_stage('dt_check_END')
+            #log_stage('dt_check_END')
             return False
     elif datetime.weekday() < 4:
-        log_stage('dt_check_END')
+        #log_stage('dt_check_END')
         return True
     elif datetime.weekday() == 5:
-        log_stage('dt_check_END')
+        #log_stage('dt_check_END')
         return False
     log_stage('dt_check_ERROR')
 
@@ -663,17 +663,17 @@ def StoreMarketData():
     ordersFilename = ibGWID+"_Orders_Latest.pkl"
     positionsFilename = ibGWID+"_Positions_Latest.pkl"
     
-    with open(localStorage+hourlyFilename,"wb") as f:
+    with open(localStorage+'hour/'+hourlyFilename,"wb") as f:
         pickle.dump(hourData, f)
-    with open(localStorage+minsFilename,"wb") as f:
+    with open(localStorage+'min/'+minsFilename,"wb") as f:
         pickle.dump(minuteData, f)
-    with open(localStorage+ticksFilename,"wb") as f:
+    with open(localStorage+'ticks/'+ticksFilename,"wb") as f:
         pickle.dump(tickData, f)
-    with open(localStorage+singleTicksFilename,"wb") as f:
+    with open(localStorage+'ticks/'+singleTicksFilename,"wb") as f:
         pickle.dump(singleTickData, f)
-    with open(localStorage+"OrdersAndPositions/"+ordersFilename,"wb") as f:
+    with open(localStorage+"ordersandpositions/"+ordersFilename,"wb") as f:
         pickle.dump(orders, f)
-    with open(localStorage+"OrdersAndPositions/"+positionsFilename,"wb") as f:
+    with open(localStorage+"ordersandpositions/"+positionsFilename,"wb") as f:
         pickle.dump(positions, f)
     log_stage('store_market_data_END_pkl')
     try:
@@ -946,7 +946,7 @@ if __name__ == '__main__':
     #os.makedirs('/logs/', exist_ok=False)
 
     print("Retrieving Market Symbol Code")
-    baseConfigInfo = pd.read_csv("./BaseConfigInfo.csv")
+    baseConfigInfo = pd.read_csv("/BaseConfigInfo.csv")
     #baseConfigInfo = pd.read_csv("/general/legiotrader/DockerFiles/docker_env/LegioContainerFiles/BaseConfigInfo.csv")
     containerIP = socket.gethostbyname(socket.gethostname())
     #containerIP = "172.50.0.57"
