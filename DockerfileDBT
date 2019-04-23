@@ -29,6 +29,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     conda install -c anaconda jupyter && \
     conda install -c anaconda boto3 && \
     conda install -c conda-forge awscli && \
+    conda install -c conda-forge tenacity && \
+    conda install -c pytorch pytorch && \
     conda clean -y --all && \
     pip install schedule && \
     pip install ib-api && \
@@ -48,7 +50,9 @@ RUN wget https://github.com/quantalsoftware/LegioContainerFiles/archive/master.z
     mkdir ~/data && \
     mkdir ~/data/hour && \
     mkdir ~/data/min && \      
-    mkdir ~/logs && \
+    mkdir ~/data/ticks && \
+    mkdir ~/data/ordersandpositions && \    
+    mkdir ~/data/logs && \
     cp -a ~/LegioContainerFiles-master/model_export.zip /model_export.zip && \
     unzip /model_export.zip -d / && \
     cp -a ~/LegioContainerFiles-master/BaseConfigInfo.csv /BaseConfigInfo.csv 
@@ -60,8 +64,8 @@ RUN mkdir ~/.aws && \
 ADD credentials /
 ADD config /
 
-RUN cp -a /credentials ~/.aws/credentials &&\
-    cp -a /config ~/.aws/config
+RUN cp -a ./credentials ~/.aws/credentials &&\
+    cp -a ./config ~/.aws/config
 
 ADD DataProcessor_Threads.py /
 ADD IBTrader.py /
